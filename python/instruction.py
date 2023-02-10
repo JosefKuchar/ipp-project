@@ -45,7 +45,8 @@ class Argument:
 class Instruction:
     """Instruction"""
 
-    def __init__(self, xml):
+    def __init__(self, xml, runner):
+        self.runner = runner
         self.order = int(xml.attrib['order'])
         self.args = []
         if xml.find('arg1') is not None:
@@ -62,4 +63,5 @@ class InstructionFactory:
 
 
 class AddInstruction:
+    runner.frames.
     """Add instruction"""
