@@ -36,7 +36,7 @@ const INSTRUCTIONS = [
     'EQ' => [Argument::Variable, Argument::Symbol, Argument::Symbol],
     'AND' => [Argument::Variable, Argument::Symbol, Argument::Symbol],
     'OR' => [Argument::Variable, Argument::Symbol, Argument::Symbol],
-    'NOT' => [Argument::Variable, Argument::Symbol, Argument::Symbol],
+    'NOT' => [Argument::Variable, Argument::Symbol],
     'INT2CHAR' => [Argument::Variable, Argument::Symbol],
     'STRI2INT' => [Argument::Variable, Argument::Symbol, Argument::Symbol],
     'READ' => [Argument::Variable, Argument::Type],
@@ -111,6 +111,8 @@ foreach ($input as $key => $line) {
         }
         continue;
     }
+    // Convert to upper case
+    $line[0] = strtoupper($line[0]);
 
     // Check if instruction exists
     if (!array_key_exists($line[0], INSTRUCTIONS)) {
@@ -140,22 +142,22 @@ foreach ($input as $key => $line) {
 
         switch ($instruction[$key - 1]) {
             case Argument::Variable:
-                if (!preg_match(Re::VAR_RE, $arg)) {
+                if (!preg_match(Re::VAR_RE, $arg, $matches)) {
                     fwrite(STDERR, "Invalid variable: $arg\n");
                     exit(StatusCode::LexicalSyntaxError->get());
                 }
                 $argumentEl->addAttribute('type', 'var');
                 break;
             case Argument::Symbol:
-                if (preg_match(Re::VAR_RE, $arg)) {
+                if (preg_match(Re::VAR_RE, $arg, $matches)) {
                     $argumentEl->addAttribute('type', 'var');
-                } elseif (preg_match(Re::BOOL_RE, $arg)) {
+                } elseif (preg_match(Re::BOOL_RE, $arg, $matches)) {
                     $argumentEl->addAttribute('type', 'bool');
-                } elseif (preg_match(Re::NIL_RE, $arg)) {
+                } elseif (preg_match(Re::NIL_RE, $arg, $matches)) {
                     $argumentEl->addAttribute('type', 'nil');
-                } elseif (preg_match(Re::INT_RE, $arg)) {
+                } elseif (preg_match(Re::INT_RE, $arg, $matches)) {
                     $argumentEl->addAttribute('type', 'int');
-                } elseif (preg_match(Re::STRING_RE, $arg)) {
+                } elseif (preg_match(Re::STRING_RE, $arg, $matches)) {
                     $argumentEl->addAttribute('type', 'string');
                 } else {
                     fwrite(STDERR, "Invalid symbol: $arg\n");
@@ -163,14 +165,14 @@ foreach ($input as $key => $line) {
                 }
                 break;
             case Argument::Label:
-                if (!preg_match(Re::LABEL_RE, $arg)) {
+                if (!preg_match(Re::LABEL_RE, $arg, $matches)) {
                     fwrite(STDERR, "Invalid label: $arg\n");
                     exit(StatusCode::LexicalSyntaxError->get());
                 }
                 $argumentEl->addAttribute('type', 'label');
                 break;
             case Argument::Type:
-                if (preg_match(Re::TYPE_RE, $arg)) {
+                if (preg_match(Re::TYPE_RE, $arg, $matches)) {
                     $argumentEl->addAttribute('type', 'type');
                 } else {
                     fwrite(STDERR, "Invalid type: $arg\n");
@@ -178,6 +180,8 @@ foreach ($input as $key => $line) {
                 }
                 break;
         }
+        // First match group is our value
+        $argumentEl[0] = $matches[1];
     }
 }
 
