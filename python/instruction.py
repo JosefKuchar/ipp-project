@@ -63,5 +63,5 @@ class InstructionFactory:
 
 
 class AddInstruction:
-    runner.frames.
+    #runner.frames.
     """Add instruction"""

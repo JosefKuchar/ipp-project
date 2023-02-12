@@ -1,12 +1,9 @@
 <?php
 
-require_once 'Re.php';
-require_once 'StatusCode.php';
-
 /**
- * Argument types
+ * Arg types
  */
-enum Argument
+enum Arg
 {
     case Variable;
     case Symbol;
@@ -15,73 +12,106 @@ enum Argument
 }
 
 /**
+ * Useful regular expressions
+ * Value is in match group
+ */
+class Re
+{
+    /** Variable Regex */
+    public const VAR_RE = "/^([GLT]F@[_\-$\&%\*!\?a-zA-Z][_\-$\&%\*!\?a-zA-Z0-9]*)$/";
+    /** Label Regex */
+    public const LABEL_RE = "/^([_\-$\&%\*!\?a-zA-Z][_\-$\&%\*!\?a-zA-Z0-9]*)$/";
+    /** Bool Regex */
+    public const BOOL_RE = "/^bool@(true|false)$/";
+    /** Nil Regex */
+    public const NIL_RE = "/^nil@(nil)$/";
+    /** Int Regex */
+    public const INT_RE = "/^int@([-+]?[0-9]+)$/"; // TODO: Octal, hex
+    /** String Regex */
+    public const STRING_RE = "/^string@((?:(?:\\\\\d{3})|[^\\\\])*)$/";
+    /** Type Regex */
+    public const TYPE_RE = "/^(int|string|bool)$/";
+    /** Comment Regex */
+    public const COMMENT_RE = "/#.*/";
+    /** Space Regex */
+    public const SPACE_RE = "/\s+/";
+}
+
+/**
+ * Exit status codes
+ */
+enum StatusCode: int
+{
+    case Ok = 0;
+    case MissingParam = 10;
+    case InputError = 11;
+    case OutputError = 12;
+    case MissingHeader = 21;
+    case InvalidInstruction = 22;
+    case LexicalSyntaxError = 23;
+    case InternalError = 99;
+
+    public function get(): int
+    {
+        return $this->value;
+    }
+}
+
+/**
  * All instructions and their arguments
  */
 const INSTRUCTIONS = [
-    'MOVE' => [Argument::Variable, Argument::Symbol],
+    'MOVE' => [Arg::Variable, Arg::Symbol],
     'CREATEFRAME' => [],
     'PUSHFRAME' => [],
     'POPFRAME' => [],
-    'DEFVAR' => [Argument::Variable],
-    'CALL' => [Argument::Label],
+    'DEFVAR' => [Arg::Variable],
+    'CALL' => [Arg::Label],
     'RETURN' => [],
-    'PUSHS' => [Argument::Symbol],
-    'POPS' => [Argument::Variable],
-    'ADD' => [Argument::Variable, Argument::Symbol, Argument::Symbol],
-    'SUB' => [Argument::Variable, Argument::Symbol, Argument::Symbol],
-    'MUL' => [Argument::Variable, Argument::Symbol, Argument::Symbol],
-    'IDIV' => [Argument::Variable, Argument::Symbol, Argument::Symbol],
-    'LT' => [Argument::Variable, Argument::Symbol, Argument::Symbol],
-    'GT' => [Argument::Variable, Argument::Symbol, Argument::Symbol],
-    'EQ' => [Argument::Variable, Argument::Symbol, Argument::Symbol],
-    'AND' => [Argument::Variable, Argument::Symbol, Argument::Symbol],
-    'OR' => [Argument::Variable, Argument::Symbol, Argument::Symbol],
-    'NOT' => [Argument::Variable, Argument::Symbol],
-    'INT2CHAR' => [Argument::Variable, Argument::Symbol],
-    'STRI2INT' => [Argument::Variable, Argument::Symbol, Argument::Symbol],
-    'READ' => [Argument::Variable, Argument::Type],
-    'WRITE' => [Argument::Symbol],
-    'CONCAT' => [Argument::Variable, Argument::Symbol, Argument::Symbol],
-    'STRLEN' => [Argument::Variable, Argument::Symbol],
-    'GETCHAR' => [Argument::Variable, Argument::Symbol, Argument::Symbol],
-    'SETCHAR' => [Argument::Variable, Argument::Symbol, Argument::Symbol],
-    'TYPE' => [Argument::Variable, Argument::Symbol],
-    'LABEL' => [Argument::Label],
-    'JUMP' => [Argument::Label],
-    'JUMPIFEQ' => [Argument::Label, Argument::Symbol, Argument::Symbol],
-    'JUMPIFNEQ' => [Argument::Label, Argument::Symbol, Argument::Symbol],
-    'EXIT' => [Argument::Symbol],
-    'DPRINT' => [Argument::Symbol],
+    'PUSHS' => [Arg::Symbol],
+    'POPS' => [Arg::Variable],
+    'ADD' => [Arg::Variable, Arg::Symbol, Arg::Symbol],
+    'SUB' => [Arg::Variable, Arg::Symbol, Arg::Symbol],
+    'MUL' => [Arg::Variable, Arg::Symbol, Arg::Symbol],
+    'IDIV' => [Arg::Variable, Arg::Symbol, Arg::Symbol],
+    'LT' => [Arg::Variable, Arg::Symbol, Arg::Symbol],
+    'GT' => [Arg::Variable, Arg::Symbol, Arg::Symbol],
+    'EQ' => [Arg::Variable, Arg::Symbol, Arg::Symbol],
+    'AND' => [Arg::Variable, Arg::Symbol, Arg::Symbol],
+    'OR' => [Arg::Variable, Arg::Symbol, Arg::Symbol],
+    'NOT' => [Arg::Variable, Arg::Symbol],
+    'INT2CHAR' => [Arg::Variable, Arg::Symbol],
+    'STRI2INT' => [Arg::Variable, Arg::Symbol, Arg::Symbol],
+    'READ' => [Arg::Variable, Arg::Type],
+    'WRITE' => [Arg::Symbol],
+    'CONCAT' => [Arg::Variable, Arg::Symbol, Arg::Symbol],
+    'STRLEN' => [Arg::Variable, Arg::Symbol],
+    'GETCHAR' => [Arg::Variable, Arg::Symbol, Arg::Symbol],
+    'SETCHAR' => [Arg::Variable, Arg::Symbol, Arg::Symbol],
+    'TYPE' => [Arg::Variable, Arg::Symbol],
+    'LABEL' => [Arg::Label],
+    'JUMP' => [Arg::Label],
+    'JUMPIFEQ' => [Arg::Label, Arg::Symbol, Arg::Symbol],
+    'JUMPIFNEQ' => [Arg::Label, Arg::Symbol, Arg::Symbol],
+    'EXIT' => [Arg::Symbol],
+    'DPRINT' => [Arg::Symbol],
     'BREAK' => []
 ];
 
-$options = [
-    'help',
-    'stats:',
-    'loc',
-    'comments',
-    'labels',
-    'jumps',
-    'fwjumps',
-    'backjumps',
-    'badjumps',
-    'frequent',
-    'print:',
-    'eol',
-];
+// Parse args with getopt
+$args = getopt('', ['help']);
 
-$args = getopt('', $options);
-
+// Output help message and exit
 if (isset($args['help'])) {
-    //TODO: You can't combine with other params
-
-    //TODO: Help text
-    echo "TODO\n";
+    echo "Accepts IPPcode23 on standard input and outputs XML representation on standard output\n\n";
+    echo "usage: parse.php [--help] < SOURCE\n\n";
+    echo "options:\n";
+    echo "\t--help\tshow this help message and exit\n";
     exit(StatusCode::Ok->get());
 }
 
+// Load whole stdin into string
 $input = file_get_contents('php://stdin', 'r');
-
 // Split by newlines, supports both LF and CR-LF line endings
 $input = preg_split("/\r\n|\n/", $input);
 // Transform to array of arrays
@@ -101,12 +131,14 @@ $input = array_filter($input, function ($line) {
 // Reindex array
 $input = array_values($input);
 
+// Initiate XML generation
 $output = new SimpleXMLElement('<program language="IPPcode23"></program>');
 
+// Iterate over all lines
 foreach ($input as $key => $line) {
     // Check header
     if ($key === 0) {
-        if ($line[0] !== '.IPPcode23' && $line[0] !== '.IPPcode22') { // TODO: Remove 22 once examples are fixed
+        if ($line[0] !== '.IPPcode23') {
             exit(StatusCode::MissingHeader->get());
         }
         continue;
@@ -138,17 +170,16 @@ foreach ($input as $key => $line) {
     // Check and generate arguments
     foreach ($line as $key => $arg) {
         $argumentEl = $instructionEl->addChild("arg$key");
-        $argumentEl[0] = $arg;
-
+        // Find and check argument type with regex
         switch ($instruction[$key - 1]) {
-            case Argument::Variable:
+            case Arg::Variable:
                 if (!preg_match(Re::VAR_RE, $arg, $matches)) {
                     fwrite(STDERR, "Invalid variable: $arg\n");
                     exit(StatusCode::LexicalSyntaxError->get());
                 }
                 $argumentEl->addAttribute('type', 'var');
                 break;
-            case Argument::Symbol:
+            case Arg::Symbol:
                 if (preg_match(Re::VAR_RE, $arg, $matches)) {
                     $argumentEl->addAttribute('type', 'var');
                 } elseif (preg_match(Re::BOOL_RE, $arg, $matches)) {
@@ -164,14 +195,14 @@ foreach ($input as $key => $line) {
                     exit(StatusCode::LexicalSyntaxError->get());
                 }
                 break;
-            case Argument::Label:
+            case Arg::Label:
                 if (!preg_match(Re::LABEL_RE, $arg, $matches)) {
                     fwrite(STDERR, "Invalid label: $arg\n");
                     exit(StatusCode::LexicalSyntaxError->get());
                 }
                 $argumentEl->addAttribute('type', 'label');
                 break;
-            case Argument::Type:
+            case Arg::Type:
                 if (preg_match(Re::TYPE_RE, $arg, $matches)) {
                     $argumentEl->addAttribute('type', 'type');
                 } else {
@@ -185,4 +216,5 @@ foreach ($input as $key => $line) {
     }
 }
 
+// Output final XML
 echo $output->asXML();
