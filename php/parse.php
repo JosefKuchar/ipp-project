@@ -1,6 +1,15 @@
 <?php
 
 /**
+ * IPPcode23 parser
+ *
+ * @author Josef Kuchař <xkucha28@stud.fit.vutbr.cz>
+ */
+
+// Show errors on stderr
+ini_set('display_errors', 'stderr');
+
+/**
  * Arg types
  */
 enum Arg
@@ -134,15 +143,15 @@ $input = array_values($input);
 // Initiate XML generation
 $output = new SimpleXMLElement('<program language="IPPcode23"></program>');
 
+// Check header
+if (count($input) === 0 || strtolower($input[0][0]) !== '.ippcode23') {
+    fwrite(STDERR, "Invalid header\n");
+    exit(StatusCode::MissingHeader->get());
+}
+unset($input[0]);
+
 // Iterate over all lines
 foreach ($input as $key => $line) {
-    // Check header
-    if ($key === 0) {
-        if ($line[0] !== '.IPPcode23') {
-            exit(StatusCode::MissingHeader->get());
-        }
-        continue;
-    }
     // Convert to upper case
     $line[0] = strtoupper($line[0]);
 
