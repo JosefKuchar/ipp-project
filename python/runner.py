@@ -8,23 +8,27 @@ class Runner:
     """Code runner"""
 
     def __init__(self, xml):
-        self.instructions = []
+        self.instructions = []  # type: list[Instruction]
         for instruction in xml.findall("instruction"):
-            self.instructions.append(Instruction(instruction))
+            self.instructions.append(Instruction(instruction, self))
         self._sort_and_check_instructions()
-        print(self.instructions[0].__dict__)
         self.done = False
         self.frames = FrameManager()
         self.instruction_pointer = 0
+        self.next_ip = 0
 
     def run(self):
         """Run the code"""
         while not self.done:
+            self.next_ip = self.instruction_pointer + 1
             self._execute()
-            self.instruction_pointer += 1
+            self.instruction_pointer = self.next_ip
 
     def _execute(self):
-        pass
+        if self.instruction_pointer >= len(self.instructions):
+            self.done = True
+        else:
+            self.instructions[self.instruction_pointer].execute()
 
     def _sort_and_check_instructions(self):
         self.instructions = sorted(

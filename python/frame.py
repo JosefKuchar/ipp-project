@@ -7,27 +7,67 @@ class FrameManager:
     """Variable frame manager"""
 
     def __init__(self):
-        self.temporary_frame = Frame()
+        self.temporary_frame = None
         self.global_frame = Frame()
-        self.local_frames = FrameStack()
+        self.local_frames = FrameStack(self)
+
+    def get_variable(self, var):
+        """Get variable"""
+        (frame, name) = var.split("@")
+        if frame == "GF":
+            return self.global_frame.get_variable(name)
+        elif frame == "LF":
+            return self.local_frames.top_frame().get_variable(name)
+        elif frame == "TF":
+            if self.temporary_frame is None:
+                exit_program(StatusCode.MISSING_FRAME, "No temporary frame")
+            return self.temporary_frame.get_variable(name)
+
+    def create_variable(self, var):
+        """Create variable"""
+        (frame, name) = var.split("@")
+        if frame == "GF":
+            self.global_frame.create_variable(name)
+        elif frame == "LF":
+            self.local_frames.top_frame().create_variable(name)
+        elif frame == "TF":
+            if self.temporary_frame is None:
+                exit_program(StatusCode.MISSING_FRAME, "No temporary frame")
+            self.temporary_frame.create_variable(name)
+
+    def set_variable(self, var_name, var):
+        """Set variable"""
+        (frame, name) = var_name.split("@")
+        if frame == "GF":
+            self.global_frame.modify_variable(name, var)
+        elif frame == "LF":
+            self.local_frames.top_frame().modify_variable(name, var)
+        elif frame == "TF":
+            if self.temporary_frame is None:
+                exit_program(StatusCode.MISSING_FRAME, "No temporary frame")
+            self.temporary_frame.modify_variable(name, var)
 
 
 class FrameStack:
     """Variable frame stack"""
 
-    def __init__(self):
+    def __init__(self, manager):
         self.frames = []
+        self.manager = manager
 
-    def push_frame(self, frame):
+    def push_frame(self):
         """Push frame"""
-        self.frames.append(frame)
+        if self.manager.temporary_frame is None:
+            exit_program(StatusCode.MISSING_FRAME, "No temporary frame")
+        self.frames.append(self.manager.temporary_frame)
+        self.manager.temporary_frame = None
 
     def pop_frame(self):
         """Pop frame"""
         if len(self.frames) == 0:
             exit_program(StatusCode.MISSING_FRAME, "No frames in stack")
         else:
-            return self.frames.pop()
+            self.manager.temporary_frame = self.frames.pop()
 
     def top_frame(self):
         """Get top frame"""
@@ -61,9 +101,9 @@ class Frame:
         else:
             self._variables[name] = Variable(name)
 
-    def modify_variable(self, name, value, var_type):
+    def modify_variable(self, name, var):
         """Modify variable"""
         if name in self._variables:
-            self._variables[name].set_value(value, var_type)
+            self._variables[name].set(var)
         else:
             exit_program(StatusCode.MISSING_VAR, "Variable not found")

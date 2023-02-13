@@ -18,13 +18,13 @@ class Variable:
         self.type = None
         self.value = None
 
-    def set_value(self, value, var_type):
+    def set(self, var):
         """Set variable value"""
-        self.value = value
-        self.type = var_type
+        self.value = var.value
+        self.type = var.type
 
-    def get_value(self):
+    def get(self):
         """Get variable value"""
         if self.value is None:
             exit_program(StatusCode.MISSING_VALUE, "Variable has no value")
-        return self.value
+        return self
