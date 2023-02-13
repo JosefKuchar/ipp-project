@@ -2,6 +2,7 @@
 from frame import FrameManager
 from instruction import Instruction
 from error import StatusCode, exit_program
+from variable import Variable
 
 
 class Runner:
@@ -23,13 +24,6 @@ class Runner:
             self.next_ip = self.instruction_pointer + 1
             self._execute()
             self.instruction_pointer = self.next_ip
-
-    def get_value(self, arg):
-        """Get value from argument"""
-        if arg.type == "var":
-            return self.frames.get_variable(arg.value).get().value
-        else:
-            return arg.value
 
     def _execute(self):
         if self.instruction_pointer >= len(self.instructions):

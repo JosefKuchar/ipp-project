@@ -2,6 +2,7 @@
 from enum import Enum
 from error import StatusCode, exit_program
 from frame import Frame
+from variable import Variable
 
 
 class Type(Enum):
@@ -41,6 +42,8 @@ class Argument:
     def __init__(self, xml):
         self.type = Type.from_string(xml.attrib['type'])
         self.value = xml.text
+        if self.type == Type.INT:
+            self.value = int(xml.text)
 
 
 class Instruction:
@@ -102,6 +105,15 @@ class Instruction:
         else:
             exit_program(StatusCode.MALLFORMED, "Invalid opcode")
 
+    def _evaluate_args(self):
+        evaluated = []
+        for arg in self.args:
+            if arg.type == Type.VAR:
+                evaluated.append(self.runner.frames.get_variable(arg.value))
+            else:
+                evaluated.append(Variable(None, arg.type, arg.value))
+        return evaluated
+
     def _move(self):
         var = self.runner.frames.get_variable(self.args[0].value)
         var.set(self.runner.frames.get_variable(self.args[1].value))
@@ -131,36 +143,76 @@ class Instruction:
         pass
 
     def _add(self):
-        var = self.runner.frames.get_variable(self.args[0].value)
-        var1 = self.runner.frames.get_variable(self.args[1].value)
-        var2 = self.runner.frames.get_variable(self.args[2].value)
+        evaled = self._evaluate_args()
+        if evaled[1].type != Type.INT or evaled[2].type != Type.INT:
+            exit_program(StatusCode.INVALID_TYPE, "Invalid argument type")
+        evaled[0].value = evaled[1].value + evaled[2].value
+        evaled[0].type = Type.INT
 
     def _sub(self):
-        pass
+        evaled = self._evaluate_args()
+        if evaled[1].type != Type.INT or evaled[2].type != Type.INT:
+            exit_program(StatusCode.INVALID_TYPE, "Invalid argument type")
+        evaled[0].value = evaled[1].value - evaled[2].value
+        evaled[0].type = Type.INT
 
     def _mul(self):
-        pass
+        evaled = self._evaluate_args()
+        if evaled[1].type != Type.INT or evaled[2].type != Type.INT:
+            exit_program(StatusCode.INVALID_TYPE, "Invalid argument type")
+        evaled[0].value = evaled[1].value * evaled[2].value
+        evaled[0].type = Type.INT
 
     def _idiv(self):
-        pass
+        evaled = self._evaluate_args()
+        if evaled[1].type != Type.INT or evaled[2].type != Type.INT:
+            exit_program(StatusCode.INVALID_TYPE, "Invalid argument type")
+        if evaled[2].value == 0:
+            exit_program(StatusCode.INVALID_VALUE, "Division by zero")
+        evaled[0].value = evaled[1].value // evaled[2].value
+        evaled[0].type = Type.INT
 
     def _lt(self):
-        pass
+        evaled = self._evaluate_args()
+        if evaled[1].type != evaled[2].type or evaled[1].type == Type.NIL or evaled[2].type == Type.NIL:
+            exit_program(StatusCode.INVALID_TYPE, "Invalid argument type")
+        evaled[0].value = evaled[1].value < evaled[2].value
+        evaled[0].type = Type.BOOL
 
     def _gt(self):
-        pass
+        evaled = self._evaluate_args()
+        if evaled[1].type != evaled[2].type or evaled[1].type == Type.NIL or evaled[2].type == Type.NIL:
+            exit_program(StatusCode.INVALID_TYPE, "Invalid argument type")
+        evaled[0].value = evaled[1].value > evaled[2].value
+        evaled[0].type = Type.BOOL
 
     def _eq(self):
-        pass
+        evaled = self._evaluate_args()
+        if evaled[1].type != evaled[2].type:
+            exit_program(StatusCode.INVALID_TYPE, "Invalid argument type")
+        evaled[0].value = evaled[1].value == evaled[2].value
+        evaled[0].type = Type.BOOL
 
     def _and(self):
-        pass
+        evaled = self._evaluate_args()
+        if evaled[1].type != Type.BOOL or evaled[2].type != Type.BOOL:
+            exit_program(StatusCode.INVALID_TYPE, "Invalid argument type")
+        evaled[0].value = evaled[1].value and evaled[2].value
+        evaled[0].type = Type.BOOL
 
     def _or(self):
-        pass
+        evaled = self._evaluate_args()
+        if evaled[1].type != Type.BOOL or evaled[2].type != Type.BOOL:
+            exit_program(StatusCode.INVALID_TYPE, "Invalid argument type")
+        evaled[0].value = evaled[1].value or evaled[2].value
+        evaled[0].type = Type.BOOL
 
     def _not(self):
-        pass
+        evaled = self._evaluate_args()
+        if evaled[1].type != Type.BOOL:
+            exit_program(StatusCode.INVALID_TYPE, "Invalid argument type")
+        evaled[0].value = not evaled[1].value
+        evaled[0].type = Type.BOOL
 
     def _int2char(self):
         pass
@@ -172,8 +224,8 @@ class Instruction:
         pass
 
     def _write(self):
-        var = self.runner.frames.get_variable(self.args[0].value)
-        print(var.value)
+        evaled = self._evaluate_args()
+        print(evaled[0].value)
 
     def _concat(self):
         pass
@@ -203,7 +255,12 @@ class Instruction:
         pass
 
     def _exit(self):
-        pass
+        evaled = self._evaluate_args()
+        if evaled[0].type != Type.INT:
+            exit_program(StatusCode.INVALID_TYPE, "Invalid argument type")
+        if evaled[0].value < 0 or evaled[0].value > 49:
+            exit_program(StatusCode.INVALID_VALUE, "Invalid argument value")
+        exit(evaled[0].value)
 
     def _dprint(self):
         pass

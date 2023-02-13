@@ -1,22 +1,13 @@
-from enum import Enum
 from error import StatusCode, exit_program
-
-
-class VariableType(Enum):
-    """Variable types"""
-    INT = 1
-    STRING = 2
-    BOOL = 3
-    NIL = 4
 
 
 class Variable:
     """Variable"""
 
-    def __init__(self, name):
+    def __init__(self, name, var_type=None, value=None):
         self.name = name
-        self.type = None
-        self.value = None
+        self.type = var_type
+        self.value = value
 
     def set(self, var):
         """Set variable value"""
