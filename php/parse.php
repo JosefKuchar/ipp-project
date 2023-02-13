@@ -34,8 +34,8 @@ class Re
     public const BOOL_RE = "/^bool@(true|false)$/";
     /** Nil Regex */
     public const NIL_RE = "/^nil@(nil)$/";
-    /** Int Regex */
-    public const INT_RE = "/^int@([-+]?[0-9]+)$/"; // TODO: Octal, hex
+    /** Int Regex - created from PHP documentation https://www.php.net/manual/en/language.types.integer.php */
+    public const INT_RE = "/^int@([+-]?(?:[1-9][0-9]*(_[0-9]+)*|0)|(?:0[xX][0-9a-fA-F]+(_[0-9a-fA-F]+)*)|(?:0[oO]?[0-7]+(_[0-7]+)*))$/";
     /** String Regex */
     public const STRING_RE = "/^string@((?:(?:\\\\\d{3})|[^\\\\])*)$/";
     /** Type Regex */
