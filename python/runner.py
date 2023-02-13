@@ -24,6 +24,13 @@ class Runner:
             self._execute()
             self.instruction_pointer = self.next_ip
 
+    def get_value(self, arg):
+        """Get value from argument"""
+        if arg.type == "var":
+            return self.frames.get_variable(arg.value).get().value
+        else:
+            return arg.value
+
     def _execute(self):
         if self.instruction_pointer >= len(self.instructions):
             self.done = True

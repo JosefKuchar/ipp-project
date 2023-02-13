@@ -35,18 +35,6 @@ class FrameManager:
                 exit_program(StatusCode.MISSING_FRAME, "No temporary frame")
             self.temporary_frame.create_variable(name)
 
-    def set_variable(self, var_name, var):
-        """Set variable"""
-        (frame, name) = var_name.split("@")
-        if frame == "GF":
-            self.global_frame.modify_variable(name, var)
-        elif frame == "LF":
-            self.local_frames.top_frame().modify_variable(name, var)
-        elif frame == "TF":
-            if self.temporary_frame is None:
-                exit_program(StatusCode.MISSING_FRAME, "No temporary frame")
-            self.temporary_frame.modify_variable(name, var)
-
 
 class FrameStack:
     """Variable frame stack"""
@@ -100,10 +88,3 @@ class Frame:
             exit_program(StatusCode.SEMANTIC_ERROR, "Variable already exists")
         else:
             self._variables[name] = Variable(name)
-
-    def modify_variable(self, name, var):
-        """Modify variable"""
-        if name in self._variables:
-            self._variables[name].set(var)
-        else:
-            exit_program(StatusCode.MISSING_VAR, "Variable not found")
