@@ -1,6 +1,7 @@
 """Code runner"""
 from frame import FrameManager
-from instruction import Instruction, Type
+from instruction_factory import InstructionFactory
+from instruction import DataType
 from error import StatusCode, exit_program
 from variable import Variable
 from stack import Stack
@@ -9,9 +10,9 @@ class Runner:
     """Code runner"""
 
     def __init__(self, xml):
-        self.instructions = []  # type: list[Instruction]
+        self.instructions = []
         for instruction in xml.findall("instruction"):
-            self.instructions.append(Instruction(instruction, self))
+            self.instructions.append(InstructionFactory(instruction, self))
         self._sort_and_check_instructions()
         self.done = False
         self.frames = FrameManager()
@@ -30,7 +31,7 @@ class Runner:
     def jump_to_label(self, label):
         """Jump to label"""
         for instruction in self.instructions:
-            if instruction.type == Type.LABEL and instruction.args[0].value == label:
+            if instruction.type == DataType.LABEL and instruction.args[0].value == label:
                 self.next_ip = instruction.order
                 return
         # TODO: Check error code
