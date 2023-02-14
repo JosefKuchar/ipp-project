@@ -10,10 +10,7 @@ class Runner:
     """Code runner"""
 
     def __init__(self, xml):
-        self.instructions = []
-        for instruction in xml.findall("instruction"):
-            self.instructions.append(InstructionFactory(instruction, self))
-        self._sort_and_check_instructions()
+        self.instructions = self._parse_instructions(xml)
         self.done = False
         self.frames = FrameManager()
         self.stack = Stack()
@@ -34,25 +31,37 @@ class Runner:
             if instruction.type == DataType.LABEL and instruction.args[0].value == label:
                 self.next_ip = instruction.order
                 return
-        # TODO: Check error code
-        exit_program(StatusCode.INVALID_STRUCTURE, "Label not found")
+        exit_program(StatusCode.SEMANTIC_ERROR, "Label not found")
 
     def _execute(self):
+        # If instruction pointer is out of range, end the program
         if self.instruction_pointer >= len(self.instructions):
             self.done = True
         else:
             self.instructions[self.instruction_pointer].execute()
 
-    def _sort_and_check_instructions(self):
-        self.instructions = sorted(
-            self.instructions, key=lambda instruction: instruction.order)
+    def _parse_instructions(self, xml):
+        instructions = []
+        # Parse and create instructions
+        for instruction in xml.findall("instruction"):
+            instructions.append(InstructionFactory(instruction, self))
+        # Sort instructions by order
+        instructions = sorted(instructions, key=lambda instruction: instruction.order)
         # Check for negative orders
-        for instruction in self.instructions:
+        for instruction in instructions:
             if instruction.order < 0:
                 exit_program(StatusCode.INVALID_STRUCTURE,
                              "Negative instruction order")
         # Check for duplicate orders
-        for i in range(len(self.instructions) - 1):
-            if self.instructions[i].order == self.instructions[i + 1].order:
+        for i in range(len(instructions) - 1):
+            if instructions[i].order == instructions[i + 1].order:
                 exit_program(StatusCode.INVALID_STRUCTURE,
                              "Duplicate instruction order")
+        # Check for duplicate labels
+        labels = []
+        for instruction in instructions:
+            if instruction.type == DataType.LABEL:
+                if instruction.args[0].value in labels:
+                    exit_program(StatusCode.INVALID_STRUCTURE, "Duplicate label")
+                labels.append(instruction.args[0].value)
+        return instructions
