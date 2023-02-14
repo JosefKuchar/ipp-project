@@ -134,9 +134,7 @@ $input = array_map(function ($line) {
     return $line;
 }, $input);
 // Remove empty lines
-$input = array_filter($input, function ($line) {
-    return $line[0] !== "";
-});
+$input = array_filter($input, fn ($line) => $line[0] !== "");
 // Reindex array
 $input = array_values($input);
 
