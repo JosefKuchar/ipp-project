@@ -1,9 +1,9 @@
 """Code runner"""
 from frame import FrameManager
-from instruction import Instruction
+from instruction import Instruction, Type
 from error import StatusCode, exit_program
 from variable import Variable
-
+from stack import Stack
 
 class Runner:
     """Code runner"""
@@ -15,6 +15,8 @@ class Runner:
         self._sort_and_check_instructions()
         self.done = False
         self.frames = FrameManager()
+        self.stack = Stack()
+        self.call_stack = Stack()
         self.instruction_pointer = 0
         self.next_ip = 0
 
@@ -24,6 +26,15 @@ class Runner:
             self.next_ip = self.instruction_pointer + 1
             self._execute()
             self.instruction_pointer = self.next_ip
+
+    def jump_to_label(self, label):
+        """Jump to label"""
+        for instruction in self.instructions:
+            if instruction.type == Type.LABEL and instruction.args[0].value == label:
+                self.next_ip = instruction.order
+                return
+        # TODO: Check error code
+        exit_program(StatusCode.INVALID_STRUCTURE, "Label not found")
 
     def _execute(self):
         if self.instruction_pointer >= len(self.instructions):

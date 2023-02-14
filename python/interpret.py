@@ -5,6 +5,7 @@ import sys
 import xml.etree.ElementTree as ET
 from error import StatusCode, exit_program
 from runner import Runner
+from arguments import Arguments
 
 if __name__ == "__main__":
     parser = ArgumentParser()
@@ -20,9 +21,9 @@ if __name__ == "__main__":
         exit_program(StatusCode.MISSING_PARAM, "Missing source or input file")
     # Replace second file with stdin if one of them is not specified
     if args.source is None:
-        args.input = sys.stdin
-    if args.input is None:
         args.source = sys.stdin
+    if args.input is None:
+        args.input = sys.stdin
 
     try:
         xml = args.source.read()
@@ -33,6 +34,11 @@ if __name__ == "__main__":
         parsed = ET.fromstring(xml)
     except:
         pass
+
+    args1 = Arguments()
+    args1.parser = "HAha"
+    args2 = Arguments()
+    print(args2.parser)
 
     runner = Runner(parsed)
     runner.run()

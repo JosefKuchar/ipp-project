@@ -131,16 +131,19 @@ class Instruction:
         self.runner.frames.create_variable(self.args[0].value)
 
     def _call(self):
-        pass
+        self.runner.call_stack.push(self.runner.next_ip)
+        # TODO: Jump to label
 
     def _return(self):
-        pass
+        self.runner.next_ip = self.runner.call_stack.pop()
 
     def _pushs(self):
-        pass
+        evaled = self._evaluate_args()
+        self.runner.stack.push(evaled[0])
 
     def _pops(self):
-        pass
+        evaled = self._evaluate_args()
+        evaled[0].set(self.runner.stack.pop())
 
     def _add(self):
         evaled = self._evaluate_args()
@@ -221,32 +224,77 @@ class Instruction:
         pass
 
     def _read(self):
-        pass
+        evaled = self._evaluate_args()
+        input_str = input() # TODO: Input from file
+        if evaled[1].value == "int":
+            evaled[0].value = int(input_str)
+            evaled[0].type = Type.INT
+        elif evaled[1].value == "bool":
+            if input_str == "true":
+                evaled[0].value = True
+            else:
+                evaled[0].value = False
+            evaled[0].type = Type.BOOL
+        elif evaled[1].value == "string":
+            evaled[0].value = input_str
+            evaled[0].type = Type.STRING
 
     def _write(self):
         evaled = self._evaluate_args()
-        print(evaled[0].value)
+        # TODO: nil, bool
+        print(evaled[0].value, end="")
 
     def _concat(self):
-        pass
+        evaled = self._evaluate_args()
+        if evaled[1].type != Type.STRING or evaled[2].type != Type.STRING:
+            exit_program(StatusCode.INVALID_TYPE, "Invalid argument type")
+        evaled[0].value = evaled[1].value + evaled[2].value
+        evaled[0].type = Type.STRING
 
     def _strlen(self):
-        pass
+        evaled = self._evaluate_args()
+        if evaled[1].type != Type.STRING:
+            exit_program(StatusCode.INVALID_TYPE, "Invalid argument type")
+        evaled[0].value = len(evaled[1].value)
+        evaled[0].type = Type.INT
 
     def _getchar(self):
-        pass
+        evaled = self._evaluate_args()
+        if evaled[1].type != Type.STRING or evaled[2].type != Type.INT:
+            exit_program(StatusCode.INVALID_TYPE, "Invalid argument type")
+        if evaled[2].value < 0 or evaled[2].value >= len(evaled[1].value):
+            exit_program(StatusCode.INVALID_STRING, "Invalid argument value")
+        evaled[0].value = evaled[1].value[evaled[2].value]
+        evaled[0].type = Type.STRING
 
     def _setchar(self):
-        pass
+        evaled = self._evaluate_args()
+        if evaled[0].type != Type.STRING or evaled[1].type != Type.INT or evaled[2].type != Type.STRING:
+            exit_program(StatusCode.INVALID_TYPE, "Invalid argument type")
+        if evaled[1].value < 0 or evaled[1].value >= len(evaled[0].value) or len(evaled[2].value) == 0:
+            exit_program(StatusCode.INVALID_STRING, "Invalid argument value")
+        evaled[0].value = evaled[0].value[:evaled[1].value] + evaled[2].value[0] + evaled[0].value[evaled[1].value + 1:]
+        evaled[0].type = Type.STRING
 
     def _type(self):
-        pass
+        evaled = self._evaluate_args()
+        if evaled[1].type == Type.NIL:
+            evaled[0].value = "nil"
+        elif evaled[1].type == Type.INT:
+            evaled[0].value = "int"
+        elif evaled[1].type == Type.BOOL:
+            evaled[0].value = "bool"
+        elif evaled[1].type == Type.STRING:
+            evaled[0].value = "string"
+        elif evaled[1].type == None:
+            evaled[0].value = ""
 
     def _label(self):
         pass
 
     def _jump(self):
-        pass
+        evaled = self._evaluate_args()
+        self.runner.jump_to_label(evaled[0].value)
 
     def _jumpifeq(self):
         pass
