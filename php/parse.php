@@ -12,8 +12,7 @@ ini_set('display_errors', 'stderr');
 /**
  * Arg types
  */
-enum Arg
-{
+enum Arg {
     case Variable;
     case Symbol;
     case Label;
@@ -24,8 +23,7 @@ enum Arg
  * Useful regular expressions
  * Value is in match group
  */
-class Re
-{
+class Re {
     /** Variable Regex */
     public const VAR_RE = "/^([GLT]F@[_\-$\&%\*!\?a-zA-Z][_\-$\&%\*!\?a-zA-Z0-9]*)$/";
     /** Label Regex */
@@ -49,21 +47,23 @@ class Re
 /**
  * Exit status codes
  */
-enum StatusCode: int
-{
+enum StatusCode: int {
     case Ok = 0;
-    case MissingParam = 10;
-    case InputError = 11;
-    case OutputError = 12;
     case MissingHeader = 21;
     case InvalidInstruction = 22;
     case LexicalSyntaxError = 23;
-    case InternalError = 99;
 
-    public function get(): int
-    {
+    public function get(): int {
         return $this->value;
     }
+}
+
+/**
+ * Exit with message and status code
+ */
+function exit_msg(string $msg, StatusCode $code) {
+    fwrite(STDERR, "$msg\n");
+    exit($code->get());
 }
 
 /**
@@ -130,8 +130,7 @@ $input = array_map(function ($line) {
     // Remove leading and trailing whitespace
     $line = trim($line);
     // Split to parts by whitespace
-    $line = preg_split(Re::SPACE_RE, $line);
-    return $line;
+    return preg_split(Re::SPACE_RE, $line);
 }, $input);
 // Remove empty lines
 $input = array_filter($input, fn ($line) => $line[0] !== "");
@@ -139,12 +138,11 @@ $input = array_filter($input, fn ($line) => $line[0] !== "");
 $input = array_values($input);
 
 // Initiate XML generation
-$output = new SimpleXMLElement('<program language="IPPcode23"></program>');
+$output = new SimpleXMLElement('<?xml version="1.0" encoding="UTF-8"?><program language="IPPcode23"/>');
 
 // Check header
 if (count($input) === 0 || strtolower($input[0][0]) !== '.ippcode23') {
-    fwrite(STDERR, "Invalid header\n");
-    exit(StatusCode::MissingHeader->get());
+    exit_msg("Invalid header", StatusCode::MissingHeader);
 }
 unset($input[0]);
 
@@ -155,14 +153,12 @@ foreach ($input as $key => $line) {
 
     // Check if instruction exists
     if (!array_key_exists($line[0], INSTRUCTIONS)) {
-        fwrite(STDERR, "Invalid instruction: $line[0]\n");
-        exit(StatusCode::InvalidInstruction->get());
+        exit_msg("Invalid instruction: $line[0]", StatusCode::InvalidInstruction);
     }
 
     // Check if instruction has correct number of arguments
     if (count($line) - 1 !== count(INSTRUCTIONS[$line[0]])) {
-        fwrite(STDERR, "Invalid number of arguments for instruction: $line[0]\n");
-        exit(StatusCode::LexicalSyntaxError->get());
+        exit_msg("Invalid number of arguments", StatusCode::LexicalSyntaxError);
     }
 
     // Craft XML
@@ -181,8 +177,7 @@ foreach ($input as $key => $line) {
         switch ($instruction[$key - 1]) {
             case Arg::Variable:
                 if (!preg_match(Re::VAR_RE, $arg, $matches)) {
-                    fwrite(STDERR, "Invalid variable: $arg\n");
-                    exit(StatusCode::LexicalSyntaxError->get());
+                    exit_msg("Invalid variable: $arg", StatusCode::LexicalSyntaxError);
                 }
                 $argumentEl->addAttribute('type', 'var');
                 break;
@@ -198,14 +193,12 @@ foreach ($input as $key => $line) {
                 } elseif (preg_match(Re::STRING_RE, $arg, $matches)) {
                     $argumentEl->addAttribute('type', 'string');
                 } else {
-                    fwrite(STDERR, "Invalid symbol: $arg\n");
-                    exit(StatusCode::LexicalSyntaxError->get());
+                    exit_msg("Invalid symbol: $arg", StatusCode::LexicalSyntaxError);
                 }
                 break;
             case Arg::Label:
                 if (!preg_match(Re::LABEL_RE, $arg, $matches)) {
-                    fwrite(STDERR, "Invalid label: $arg\n");
-                    exit(StatusCode::LexicalSyntaxError->get());
+                    exit_msg("Invalid label: $arg", StatusCode::LexicalSyntaxError);
                 }
                 $argumentEl->addAttribute('type', 'label');
                 break;
@@ -213,8 +206,7 @@ foreach ($input as $key => $line) {
                 if (preg_match(Re::TYPE_RE, $arg, $matches)) {
                     $argumentEl->addAttribute('type', 'type');
                 } else {
-                    fwrite(STDERR, "Invalid type: $arg\n");
-                    exit(StatusCode::LexicalSyntaxError->get());
+                    exit_msg("Invalid type: $arg", StatusCode::LexicalSyntaxError);
                 }
                 break;
         }
