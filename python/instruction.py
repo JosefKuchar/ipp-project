@@ -1,6 +1,8 @@
-from variable import Variable
 from enum import Enum
+import re
+from variable import Variable
 from error import exit_program, StatusCode
+
 
 class DataType(Enum):
     """Variable types"""
@@ -32,6 +34,7 @@ class DataType(Enum):
         else:
             exit_program(StatusCode.MALLFORMED, "Invalid argument type")
 
+
 class Argument:
     """Instruction argument"""
 
@@ -40,6 +43,12 @@ class Argument:
         self.value = xml.text
         if self.type == DataType.INT:
             self.value = int(xml.text)
+        elif self.type == DataType.STRING:
+            self.value = re.sub(r"\\\d{3}",
+                                lambda x: chr(int(x.group(0)[1:])), xml.text)
+        elif self.type == DataType.BOOL:
+            self.value = xml.text == "true"
+
 
 class BaseInstruction:
     """Base instruction"""

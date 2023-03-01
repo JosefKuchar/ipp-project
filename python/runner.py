@@ -5,6 +5,8 @@ from instruction import DataType
 from error import StatusCode, exit_program
 from variable import Variable
 from stack import Stack
+from instructions import Label
+
 
 class Runner:
     """Code runner"""
@@ -28,7 +30,7 @@ class Runner:
     def jump_to_label(self, label):
         """Jump to label"""
         for instruction in self.instructions:
-            if instruction.type == DataType.LABEL and instruction.args[0].value == label:
+            if isinstance(instruction, Label) and instruction.args[0].value == label:
                 self.next_ip = instruction.order
                 return
         exit_program(StatusCode.SEMANTIC_ERROR, "Label not found")
@@ -46,7 +48,8 @@ class Runner:
         for instruction in xml.findall("instruction"):
             instructions.append(InstructionFactory(instruction, self))
         # Sort instructions by order
-        instructions = sorted(instructions, key=lambda instruction: instruction.order)
+        instructions = sorted(
+            instructions, key=lambda instruction: instruction.order)
         # Check for negative orders
         for instruction in instructions:
             if instruction.order < 0:
@@ -60,8 +63,9 @@ class Runner:
         # Check for duplicate labels
         labels = []
         for instruction in instructions:
-            if instruction.type == DataType.LABEL:
+            if isinstance(instruction, Label):
                 if instruction.args[0].value in labels:
-                    exit_program(StatusCode.INVALID_STRUCTURE, "Duplicate label")
+                    exit_program(StatusCode.INVALID_STRUCTURE,
+                                 "Duplicate label")
                 labels.append(instruction.args[0].value)
         return instructions

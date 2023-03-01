@@ -1,5 +1,6 @@
 from error import StatusCode, exit_program
 
+
 class Stack:
     def __init__(self):
         self.items = []

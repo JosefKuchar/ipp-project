@@ -3,6 +3,7 @@ from argparse import ArgumentParser, FileType
 from error import StatusCode, exit_program
 import sys
 
+
 class Arguments():
     __instance = None
 
@@ -28,12 +29,13 @@ class Arguments():
                             help="input file with XML representation of source code")
         parser.add_argument("-i", "--input", type=FileType("r"),
                             help=("file with inputs for the actual"
-                                "interpretation of the specified source code"))
+                                  "interpretation of the specified source code"))
         args = parser.parse_args()
 
         # Source or input has to be specified
         if (args.source is None and args.input is None):
-            exit_program(StatusCode.MISSING_PARAM, "Missing source or input file")
+            exit_program(StatusCode.MISSING_PARAM,
+                         "Missing source or input file")
         # Replace second file with stdin if one of them is not specified
         if args.source is None:
             args.source = sys.stdin
