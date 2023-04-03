@@ -9,3 +9,6 @@ submit_test: zip
 
 test_php:
 	cd php && php8.1 test.php
+
+test_python:
+	cd python && php test.php --int-only --directory=ipp-2023-tests/interpret-only/ --recursive > test-results.html

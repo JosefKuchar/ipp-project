@@ -2,6 +2,7 @@ from instruction import BaseInstruction, DataType
 from error import exit_program, StatusCode
 from frame import Frame
 from arguments import Arguments
+import fileinput
 import sys
 
 

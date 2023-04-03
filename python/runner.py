@@ -1,9 +1,7 @@
 """Code runner"""
 from frame import FrameManager
 from instruction_factory import InstructionFactory
-from instruction import DataType
 from error import StatusCode, exit_program
-from variable import Variable
 from stack import Stack
 from instructions import Label
 
@@ -29,9 +27,9 @@ class Runner:
 
     def jump_to_label(self, label):
         """Jump to label"""
-        for instruction in self.instructions:
+        for index, instruction in enumerate(self.instructions):
             if isinstance(instruction, Label) and instruction.args[0].value == label:
-                self.next_ip = instruction.order
+                self.next_ip = index
                 return
         exit_program(StatusCode.SEMANTIC_ERROR, "Label not found")
 
@@ -65,7 +63,7 @@ class Runner:
         for instruction in instructions:
             if isinstance(instruction, Label):
                 if instruction.args[0].value in labels:
-                    exit_program(StatusCode.INVALID_STRUCTURE,
+                    exit_program(StatusCode.SEMANTIC_ERROR,
                                  "Duplicate label")
                 labels.append(instruction.args[0].value)
         return instructions
