@@ -112,10 +112,10 @@ $args = getopt('', ['help']);
 
 // Output help message and exit
 if (isset($args['help'])) {
-    echo "Accepts IPPcode23 on standard input and outputs XML representation on standard output\n\n";
-    echo "usage: parse.php [--help] < SOURCE\n\n";
-    echo "options:\n";
-    echo "\t--help\tshow this help message and exit\n";
+    echo "Prijima IPPcode23 na standardnim vstupu and vypisuje XML reprezentaci na standardnim vystupu\n\n";
+    echo "pouziti: parse.php [--help] < SOURCE\n\n";
+    echo "moznosti:\n";
+    echo "\t--help\tvypise tuto zpravu a ukonci program\n";
     exit(StatusCode::Ok->get());
 }
 
