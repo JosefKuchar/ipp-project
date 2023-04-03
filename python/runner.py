@@ -4,6 +4,7 @@ from instruction_factory import InstructionFactory
 from error import StatusCode, exit_program
 from stack import Stack
 from instructions import Label
+from validate import validate_xml
 
 
 class Runner:
@@ -41,6 +42,7 @@ class Runner:
             self.instructions[self.instruction_pointer].execute()
 
     def _parse_instructions(self, xml):
+        validate_xml(xml)
         instructions = []
         # Parse and create instructions
         for instruction in xml.findall("instruction"):
@@ -48,22 +50,4 @@ class Runner:
         # Sort instructions by order
         instructions = sorted(
             instructions, key=lambda instruction: instruction.order)
-        # Check for negative orders
-        for instruction in instructions:
-            if instruction.order < 0:
-                exit_program(StatusCode.INVALID_STRUCTURE,
-                             "Negative instruction order")
-        # Check for duplicate orders
-        for i in range(len(instructions) - 1):
-            if instructions[i].order == instructions[i + 1].order:
-                exit_program(StatusCode.INVALID_STRUCTURE,
-                             "Duplicate instruction order")
-        # Check for duplicate labels
-        labels = []
-        for instruction in instructions:
-            if isinstance(instruction, Label):
-                if instruction.args[0].value in labels:
-                    exit_program(StatusCode.SEMANTIC_ERROR,
-                                 "Duplicate label")
-                labels.append(instruction.args[0].value)
         return instructions

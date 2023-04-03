@@ -1,5 +1,6 @@
 """Entry point"""
 
+import sys
 from runner import Runner
 from arguments import Arguments
 
@@ -10,4 +11,5 @@ if __name__ == "__main__":
 
     # Run the program
     runner = Runner(args.source)
-    runner.run()
+    with args.input as sys.stdin:
+        runner.run()

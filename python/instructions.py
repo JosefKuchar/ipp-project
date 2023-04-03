@@ -204,22 +204,20 @@ class Read(BaseInstruction):
 
     def execute(self):
         evaled = self._evaluate_args()
-        args = Arguments.get_instance()
 
-        with args.input as sys.stdin:
-            input_str = input()
-            if evaled[1].value == "int":
-                evaled[0].value = int(input_str)
-                evaled[0].type = DataType.INT
-            elif evaled[1].value == "bool":
-                if input_str == "true":
-                    evaled[0].value = True
-                else:
-                    evaled[0].value = False
-                evaled[0].type = DataType.BOOL
-            elif evaled[1].value == "string":
-                evaled[0].value = input_str
-                evaled[0].type = DataType.STRING
+        input_str = input()
+        if evaled[1].value == "int":
+            evaled[0].value = int(input_str)
+            evaled[0].type = DataType.INT
+        elif evaled[1].value == "bool":
+            if input_str == "true":
+                evaled[0].value = True
+            else:
+                evaled[0].value = False
+            evaled[0].type = DataType.BOOL
+        elif evaled[1].value == "string":
+            evaled[0].value = input_str
+            evaled[0].type = DataType.STRING
 
 
 class Write(BaseInstruction):
@@ -227,8 +225,15 @@ class Write(BaseInstruction):
 
     def execute(self):
         evaled = self._evaluate_args()
-        # TODO: nil, bool
-        print(evaled[0].value, end="", flush=True)
+        if evaled[0].type == DataType.BOOL:
+            if evaled[0].value:
+                print("true", end="", flush=True)
+            else:
+                print("false", end="", flush=True)
+        elif evaled[0].type == DataType.NIL:
+            print("", end="", flush=True)
+        else:
+            print(evaled[0].value, end="", flush=True)
 
 
 class Concat(BaseInstruction):
