@@ -1,15 +1,16 @@
+"""Implementation of all instructions"""
+
+import sys
 from instruction import BaseInstruction, DataType
 from error import exit_program, StatusCode
 from frame import Frame
-from arguments import Arguments
-import fileinput
-import sys
 
 
 class Move(BaseInstruction):
     """MOVE <var> <symb>"""
 
     def execute(self):
+        """Execute instruction"""
         evaled = self._evaluate_args()
         evaled[0].set(evaled[1])
 
@@ -18,6 +19,7 @@ class CreateFrame(BaseInstruction):
     """CREATEFRAME"""
 
     def execute(self):
+        """Execute instruction"""
         self.runner.frames.temporary_frame = Frame()
 
 
@@ -25,6 +27,7 @@ class PushFrame(BaseInstruction):
     """PUSHFRAME"""
 
     def execute(self):
+        """Execute instruction"""
         self.runner.frames.local_frames.push_frame()
 
 
@@ -32,6 +35,7 @@ class PopFrame(BaseInstruction):
     """POPFRAME"""
 
     def execute(self):
+        """Execute instruction"""
         self.runner.frames.local_frames.pop_frame()
 
 
@@ -39,6 +43,7 @@ class DefVar(BaseInstruction):
     """DEFVAR <var>"""
 
     def execute(self):
+        """Execute instruction"""
         self.runner.frames.create_variable(self.args[0].value)
 
 
@@ -46,6 +51,7 @@ class Call(BaseInstruction):
     """CALL <label>"""
 
     def execute(self):
+        """Execute instruction"""
         self.runner.call_stack.push(self.runner.next_ip)
         self.runner.jump_to_label(self.args[0].value)
 
@@ -54,6 +60,7 @@ class Return(BaseInstruction):
     """RETURN"""
 
     def execute(self):
+        """Execute instruction"""
         self.runner.next_ip = self.runner.call_stack.pop()
 
 
@@ -61,6 +68,7 @@ class PushS(BaseInstruction):
     """PUSHS <symb>"""
 
     def execute(self):
+        """Execute instruction"""
         evaled = self._evaluate_args()
         self.runner.stack.push(evaled[0])
 
@@ -69,6 +77,7 @@ class PopS(BaseInstruction):
     """POPS <var>"""
 
     def execute(self):
+        """Execute instruction"""
         evaled = self._evaluate_args()
         evaled[0].set(self.runner.stack.pop())
 
@@ -77,6 +86,7 @@ class Add(BaseInstruction):
     """ADD <var> <symb1> <symb2>"""
 
     def execute(self):
+        """Execute instruction"""
         evaled = self._evaluate_args()
         if evaled[1].type != DataType.INT or evaled[2].type != DataType.INT:
             exit_program(StatusCode.INVALID_TYPE, "Invalid argument type")
@@ -88,6 +98,7 @@ class Sub(BaseInstruction):
     """SUB <var> <symb1> <symb2>"""
 
     def execute(self):
+        """Execute instruction"""
         evaled = self._evaluate_args()
         if evaled[1].type != DataType.INT or evaled[2].type != DataType.INT:
             exit_program(StatusCode.INVALID_TYPE, "Invalid argument type")
@@ -99,6 +110,7 @@ class Mul(BaseInstruction):
     """MUL <var> <symb1> <symb2>"""
 
     def execute(self):
+        """Execute instruction"""
         evaled = self._evaluate_args()
         if evaled[1].type != DataType.INT or evaled[2].type != DataType.INT:
             exit_program(StatusCode.INVALID_TYPE, "Invalid argument type")
@@ -110,6 +122,7 @@ class IDiv(BaseInstruction):
     """IDIV <var> <symb1> <symb2>"""
 
     def execute(self):
+        """Execute instruction"""
         evaled = self._evaluate_args()
         if evaled[1].type != DataType.INT or evaled[2].type != DataType.INT:
             exit_program(StatusCode.INVALID_TYPE, "Invalid argument type")
@@ -123,17 +136,7 @@ class Lt(BaseInstruction):
     """LT <var> <symb1> <symb2>"""
 
     def execute(self):
-        evaled = self._evaluate_args()
-        if evaled[1].type != evaled[2].type or evaled[1].type == DataType.NIL or evaled[2].type == DataType.NIL:
-            exit_program(StatusCode.INVALID_TYPE, "Invalid argument type")
-        evaled[0].value = evaled[1].value > evaled[2].value
-        evaled[0].type = DataType.BOOL
-
-
-class Gt(BaseInstruction):
-    """GT <var> <symb1> <symb2>"""
-
-    def execute(self):
+        """Execute instruction"""
         evaled = self._evaluate_args()
         if evaled[1].type != evaled[2].type or evaled[1].type == DataType.NIL or evaled[2].type == DataType.NIL:
             exit_program(StatusCode.INVALID_TYPE, "Invalid argument type")
@@ -141,10 +144,23 @@ class Gt(BaseInstruction):
         evaled[0].type = DataType.BOOL
 
 
+class Gt(BaseInstruction):
+    """GT <var> <symb1> <symb2>"""
+
+    def execute(self):
+        """Execute instruction"""
+        evaled = self._evaluate_args()
+        if evaled[1].type != evaled[2].type or evaled[1].type == DataType.NIL or evaled[2].type == DataType.NIL:
+            exit_program(StatusCode.INVALID_TYPE, "Invalid argument type")
+        evaled[0].value = evaled[1].value > evaled[2].value
+        evaled[0].type = DataType.BOOL
+
+
 class Eq(BaseInstruction):
     """EQ <var> <symb1> <symb2>"""
 
     def execute(self):
+        """Execute instruction"""
         evaled = self._evaluate_args()
         if evaled[1].type != evaled[2].type:
             exit_program(StatusCode.INVALID_TYPE, "Invalid argument type")
@@ -156,6 +172,7 @@ class And(BaseInstruction):
     """AND <var> <symb1> <symb2>"""
 
     def execute(self):
+        """Execute instruction"""
         evaled = self._evaluate_args()
         if evaled[1].type != DataType.BOOL or evaled[2].type != DataType.BOOL:
             exit_program(StatusCode.INVALID_TYPE, "Invalid argument type")
@@ -167,6 +184,7 @@ class Or(BaseInstruction):
     """OR <var> <symb1> <symb2>"""
 
     def execute(self):
+        """Execute instruction"""
         evaled = self._evaluate_args()
         if evaled[1].type != DataType.BOOL or evaled[2].type != DataType.BOOL:
             exit_program(StatusCode.INVALID_TYPE, "Invalid argument type")
@@ -178,6 +196,7 @@ class Not(BaseInstruction):
     """NOT <var> <symb>"""
 
     def execute(self):
+        """Execute instruction"""
         evaled = self._evaluate_args()
         if evaled[1].type != DataType.BOOL:
             exit_program(StatusCode.INVALID_TYPE, "Invalid argument type")
@@ -189,20 +208,23 @@ class Int2Char(BaseInstruction):
     """INT2CHAR <var> <symb>"""
 
     def execute(self):
-        pass
+        """Execute instruction"""
+        # TODO: Implement this
 
 
 class Stri2Int(BaseInstruction):
     """STRI2INT <var> <symb1> <symb2>"""
 
     def execute(self):
-        pass
+        """Execute instruction"""
+        # TODO: Implement this
 
 
 class Read(BaseInstruction):
     """READ <var> <type>"""
 
     def execute(self):
+        """Execute instruction"""
         evaled = self._evaluate_args()
 
         input_str = input()
@@ -224,6 +246,7 @@ class Write(BaseInstruction):
     """WRITE <symb>"""
 
     def execute(self):
+        """Execute instruction"""
         evaled = self._evaluate_args()
         if evaled[0].type == DataType.BOOL:
             if evaled[0].value:
@@ -240,6 +263,7 @@ class Concat(BaseInstruction):
     """CONCAT <var> <symb1> <symb2>"""
 
     def execute(self):
+        """Execute instruction"""
         evaled = self._evaluate_args()
         if evaled[1].type != DataType.STRING or evaled[2].type != DataType.STRING:
             exit_program(StatusCode.INVALID_TYPE, "Invalid argument type")
@@ -251,6 +275,7 @@ class StrLen(BaseInstruction):
     """STRLEN <var> <symb>"""
 
     def execute(self):
+        """Execute instruction"""
         evaled = self._evaluate_args()
         if evaled[1].type != DataType.STRING:
             exit_program(StatusCode.INVALID_TYPE, "Invalid argument type")
@@ -262,6 +287,7 @@ class GetChar(BaseInstruction):
     """GETCHAR <var> <symb1> <symb2>"""
 
     def execute(self):
+        """Execute instruction"""
         evaled = self._evaluate_args()
         if evaled[1].type != DataType.STRING or evaled[2].type != DataType.INT:
             exit_program(StatusCode.INVALID_TYPE, "Invalid argument type")
@@ -275,6 +301,7 @@ class SetChar(BaseInstruction):
     """SETCHAR <var> <symb1> <symb2>"""
 
     def execute(self):
+        """Execute instruction"""
         evaled = self._evaluate_args()
         if evaled[0].type != DataType.STRING or evaled[1].type != DataType.INT or evaled[2].type != DataType.STRING:
             exit_program(StatusCode.INVALID_TYPE, "Invalid argument type")
@@ -289,6 +316,7 @@ class Type(BaseInstruction):
     """TYPE <var> <symb>"""
 
     def execute(self):
+        """Execute instruction"""
         evaled = self._evaluate_args()
         if evaled[1].type == DataType.NIL:
             evaled[0].value = "nil"
@@ -306,13 +334,15 @@ class Label(BaseInstruction):
     """LABEL <label>"""
 
     def execute(self):
-        pass  # Labels are not executed
+        """Execute instruction"""
+        # Labels are not executed
 
 
 class Jump(BaseInstruction):
     """JUMP <label>"""
 
     def execute(self):
+        """Execute instruction"""
         evaled = self._evaluate_args()
         self.runner.jump_to_label(evaled[0].value)
 
@@ -321,6 +351,7 @@ class JumpIfEq(BaseInstruction):
     """JUMPIFEQ <label> <symb1> <symb2>"""
 
     def execute(self):
+        """Execute instruction"""
         evaled = self._evaluate_args()
         # TODO: Type checking
         if evaled[1].value == evaled[2].value:
@@ -331,6 +362,7 @@ class JumpIfNeq(BaseInstruction):
     """JUMPIFNEQ <label> <symb1> <symb2>"""
 
     def execute(self):
+        """Execute instruction"""
         evaled = self._evaluate_args()
         # TODO: Type checking
         if evaled[1].value != evaled[2].value:
@@ -341,6 +373,7 @@ class Exit(BaseInstruction):
     """EXIT <symb>"""
 
     def execute(self):
+        """Execute instruction"""
         evaled = self._evaluate_args()
         if evaled[0].type != DataType.INT:
             exit_program(StatusCode.INVALID_TYPE, "Invalid argument type")
@@ -353,6 +386,7 @@ class DPrint(BaseInstruction):
     """DPRINT <symb>"""
 
     def execute(self):
+        """Execute instruction"""
         print("TODO DPRINT INFO", file=sys.stderr)
 
 
@@ -360,4 +394,5 @@ class Break(BaseInstruction):
     """BREAK"""
 
     def execute(self):
+        """Execute instruction"""
         print("TODO BREAK INFO", file=sys.stderr)

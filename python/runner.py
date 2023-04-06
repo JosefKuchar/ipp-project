@@ -1,6 +1,6 @@
 """Code runner"""
 from frame import FrameManager
-from instruction_factory import InstructionFactory
+from instruction_factory import instruction_factory
 from error import StatusCode, exit_program
 from stack import Stack
 from instructions import Label
@@ -46,7 +46,7 @@ class Runner:
         instructions = []
         # Parse and create instructions
         for instruction in xml.findall("instruction"):
-            instructions.append(InstructionFactory(instruction, self))
+            instructions.append(instruction_factory(instruction, self))
         # Sort instructions by order
         instructions = sorted(
             instructions, key=lambda instruction: instruction.order)

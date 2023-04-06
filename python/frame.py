@@ -1,3 +1,4 @@
+"""Frames and frame manager"""
 
 from error import StatusCode, exit_program
 from variable import Variable

@@ -1,3 +1,5 @@
+"""Variable implementation"""
+
 from error import StatusCode, exit_program
 
 

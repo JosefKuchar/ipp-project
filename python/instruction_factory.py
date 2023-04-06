@@ -2,7 +2,8 @@
 from error import StatusCode, exit_program
 import instructions
 
-def InstructionFactory(xml, runner):
+
+def instruction_factory(xml, runner):
     """Instruction factory"""
     classes = {
         "MOVE": instructions.Move,

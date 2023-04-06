@@ -1,3 +1,5 @@
+"""Instruction foundation"""
+
 from enum import Enum
 import re
 from variable import Variable
@@ -44,8 +46,11 @@ class Argument:
         if self.type == DataType.INT:
             self.value = int(xml.text)
         elif self.type == DataType.STRING:
-            self.value = re.sub(r"\\\d{3}",
-                                lambda x: chr(int(x.group(0)[1:])), xml.text)
+            if xml.text is None:
+                self.value = ""
+            else:
+                self.value = re.sub(r"\\\d{3}",
+                                    lambda x: chr(int(x.group(0)[1:])), xml.text)
         elif self.type == DataType.BOOL:
             self.value = xml.text == "true"
 

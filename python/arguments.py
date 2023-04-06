@@ -1,10 +1,13 @@
+"""Argument parsing"""
+
+import sys
 import xml.etree.ElementTree as ET
 from argparse import ArgumentParser, FileType
 from error import StatusCode, exit_program
-import sys
 
 
 class Arguments():
+    """Argument parser"""
     __instance = None
 
     @staticmethod
@@ -23,6 +26,8 @@ class Arguments():
             Arguments.__instance = self
 
     def parse(self):
+        """Parse arguments"""
+
         # Setup argument parser
         parser = ArgumentParser()
         parser.add_argument("-s", "--source", type=FileType("r"),

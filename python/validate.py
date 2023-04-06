@@ -1,6 +1,8 @@
-from error import StatusCode, exit_program
-from enum import Enum
+"""Validate XML structure"""
+
 import re
+from enum import Enum
+from error import StatusCode, exit_program
 
 
 class Arg(Enum):
@@ -145,7 +147,7 @@ def validate_xml(xml):
                         exit_program(StatusCode.INVALID_STRUCTURE,
                                      "Invalid integer")
                 elif argument.attrib["type"] == "string":
-                    if not STRING_RE.match(argument.text):
+                    if argument.text is not None and not STRING_RE.match(argument.text):
                         exit_program(StatusCode.INVALID_STRUCTURE,
                                      "Invalid string")
                 elif argument.attrib["type"] == "bool":
