@@ -70,11 +70,15 @@ class BaseInstruction:
             self.args.append(Argument(xml.find('arg3')))
         self.opcode = xml.attrib['opcode']
 
-    def _evaluate_args(self):
+    def _evaluate_args(self, must_be_initialized=None):
         evaluated = []
-        for arg in self.args:
+        for index, arg in enumerate(self.args):
+            var = None
             if arg.type == DataType.VAR:
-                evaluated.append(self.runner.frames.get_variable(arg.value))
+                var = self.runner.frames.get_variable(arg.value)
             else:
-                evaluated.append(Variable(None, arg.type, arg.value))
+                var = Variable(None, arg.type, arg.value)
+            if must_be_initialized is not None and index in must_be_initialized:
+                var.check_initialized()
+            evaluated.append(var)
         return evaluated

@@ -12,3 +12,9 @@ test_php:
 
 test_python:
 	cd python && php test.php --int-only --directory=ipp-2023-tests/interpret-only/ --recursive > test-results.html
+
+test_python_both:
+	cd python && php test.php --parse-script=../php/parse.php --jexampath=../php/jexamxml.jar --directory=ipp-2023-tests/both/ --recursive > test-results.html
+
+test_python_ultratest:
+	cd python && python3 interpret.py --source=manual_tests/ultra_test

@@ -11,7 +11,7 @@ class Move(BaseInstruction):
 
     def execute(self):
         """Execute instruction"""
-        evaled = self._evaluate_args()
+        evaled = self._evaluate_args([1])
         evaled[0].set(evaled[1])
 
 
@@ -69,7 +69,7 @@ class PushS(BaseInstruction):
 
     def execute(self):
         """Execute instruction"""
-        evaled = self._evaluate_args()
+        evaled = self._evaluate_args([0])
         self.runner.stack.push(evaled[0])
 
 
@@ -87,7 +87,7 @@ class Add(BaseInstruction):
 
     def execute(self):
         """Execute instruction"""
-        evaled = self._evaluate_args()
+        evaled = self._evaluate_args([1, 2])
         if evaled[1].type != DataType.INT or evaled[2].type != DataType.INT:
             exit_program(StatusCode.INVALID_TYPE, "Invalid argument type")
         evaled[0].value = evaled[1].value + evaled[2].value
@@ -99,7 +99,7 @@ class Sub(BaseInstruction):
 
     def execute(self):
         """Execute instruction"""
-        evaled = self._evaluate_args()
+        evaled = self._evaluate_args([1, 2])
         if evaled[1].type != DataType.INT or evaled[2].type != DataType.INT:
             exit_program(StatusCode.INVALID_TYPE, "Invalid argument type")
         evaled[0].value = evaled[1].value - evaled[2].value
@@ -111,7 +111,7 @@ class Mul(BaseInstruction):
 
     def execute(self):
         """Execute instruction"""
-        evaled = self._evaluate_args()
+        evaled = self._evaluate_args([1, 2])
         if evaled[1].type != DataType.INT or evaled[2].type != DataType.INT:
             exit_program(StatusCode.INVALID_TYPE, "Invalid argument type")
         evaled[0].value = evaled[1].value * evaled[2].value
@@ -123,7 +123,7 @@ class IDiv(BaseInstruction):
 
     def execute(self):
         """Execute instruction"""
-        evaled = self._evaluate_args()
+        evaled = self._evaluate_args([1, 2])
         if evaled[1].type != DataType.INT or evaled[2].type != DataType.INT:
             exit_program(StatusCode.INVALID_TYPE, "Invalid argument type")
         if evaled[2].value == 0:
@@ -137,7 +137,7 @@ class Lt(BaseInstruction):
 
     def execute(self):
         """Execute instruction"""
-        evaled = self._evaluate_args()
+        evaled = self._evaluate_args([1, 2])
         if evaled[1].type != evaled[2].type or evaled[1].type == DataType.NIL or evaled[2].type == DataType.NIL:
             exit_program(StatusCode.INVALID_TYPE, "Invalid argument type")
         evaled[0].value = evaled[1].value < evaled[2].value
@@ -149,7 +149,7 @@ class Gt(BaseInstruction):
 
     def execute(self):
         """Execute instruction"""
-        evaled = self._evaluate_args()
+        evaled = self._evaluate_args([1, 2])
         if evaled[1].type != evaled[2].type or evaled[1].type == DataType.NIL or evaled[2].type == DataType.NIL:
             exit_program(StatusCode.INVALID_TYPE, "Invalid argument type")
         evaled[0].value = evaled[1].value > evaled[2].value
@@ -161,10 +161,13 @@ class Eq(BaseInstruction):
 
     def execute(self):
         """Execute instruction"""
-        evaled = self._evaluate_args()
-        if evaled[1].type != evaled[2].type:
+        evaled = self._evaluate_args([1, 2])
+        if evaled[1].type != evaled[2].type and evaled[1].type != DataType.NIL and evaled[2].type != DataType.NIL:
             exit_program(StatusCode.INVALID_TYPE, "Invalid argument type")
-        evaled[0].value = evaled[1].value == evaled[2].value
+        if evaled[1].type == DataType.NIL or evaled[2].type == DataType.NIL:
+            evaled[0].value = evaled[1].type == evaled[2].type
+        else:
+            evaled[0].value = evaled[1].value == evaled[2].value
         evaled[0].type = DataType.BOOL
 
 
@@ -173,7 +176,7 @@ class And(BaseInstruction):
 
     def execute(self):
         """Execute instruction"""
-        evaled = self._evaluate_args()
+        evaled = self._evaluate_args([1, 2])
         if evaled[1].type != DataType.BOOL or evaled[2].type != DataType.BOOL:
             exit_program(StatusCode.INVALID_TYPE, "Invalid argument type")
         evaled[0].value = evaled[1].value and evaled[2].value
@@ -185,7 +188,7 @@ class Or(BaseInstruction):
 
     def execute(self):
         """Execute instruction"""
-        evaled = self._evaluate_args()
+        evaled = self._evaluate_args([1, 2])
         if evaled[1].type != DataType.BOOL or evaled[2].type != DataType.BOOL:
             exit_program(StatusCode.INVALID_TYPE, "Invalid argument type")
         evaled[0].value = evaled[1].value or evaled[2].value
@@ -197,7 +200,7 @@ class Not(BaseInstruction):
 
     def execute(self):
         """Execute instruction"""
-        evaled = self._evaluate_args()
+        evaled = self._evaluate_args([1, 2])
         if evaled[1].type != DataType.BOOL:
             exit_program(StatusCode.INVALID_TYPE, "Invalid argument type")
         evaled[0].value = not evaled[1].value
@@ -209,7 +212,14 @@ class Int2Char(BaseInstruction):
 
     def execute(self):
         """Execute instruction"""
-        # TODO: Implement this
+        evaled = self._evaluate_args([1])
+        if evaled[1].type != DataType.INT:
+            exit_program(StatusCode.INVALID_TYPE, "Invalid argument type")
+        try:
+            evaled[0].value = chr(evaled[1].value)
+            evaled[0].type = DataType.STRING
+        except ValueError:
+            exit_program(StatusCode.INVALID_STRING, "Invalid range of int")
 
 
 class Stri2Int(BaseInstruction):
@@ -217,7 +227,13 @@ class Stri2Int(BaseInstruction):
 
     def execute(self):
         """Execute instruction"""
-        # TODO: Implement this
+        evaled = self._evaluate_args([1, 2])
+        if evaled[1].type != DataType.STRING or evaled[2].type != DataType.INT:
+            exit_program(StatusCode.INVALID_TYPE, "Invalid argument type")
+        if evaled[2].value < 0 or evaled[2].value >= len(evaled[1].value):
+            exit_program(StatusCode.INVALID_STRING, "Invalid range of int")
+        evaled[0].value = ord(evaled[1].value[evaled[2].value])
+        evaled[0].type = DataType.INT
 
 
 class Read(BaseInstruction):
@@ -225,21 +241,24 @@ class Read(BaseInstruction):
 
     def execute(self):
         """Execute instruction"""
-        evaled = self._evaluate_args()
+        evaled = self._evaluate_args([1])
 
-        input_str = input()
-        if evaled[1].value == "int":
-            evaled[0].value = int(input_str)
-            evaled[0].type = DataType.INT
-        elif evaled[1].value == "bool":
-            if input_str == "true":
-                evaled[0].value = True
-            else:
-                evaled[0].value = False
-            evaled[0].type = DataType.BOOL
-        elif evaled[1].value == "string":
-            evaled[0].value = input_str
-            evaled[0].type = DataType.STRING
+        try:
+            input_str = input()
+            if evaled[1].value == "int":
+                evaled[0].value = int(input_str)
+                evaled[0].type = DataType.INT
+            elif evaled[1].value == "bool":
+                if input_str.lower() == "true":
+                    evaled[0].value = True
+                else:
+                    evaled[0].value = False
+                evaled[0].type = DataType.BOOL
+            elif evaled[1].value == "string":
+                evaled[0].value = input_str
+                evaled[0].type = DataType.STRING
+        except (EOFError, ValueError):
+            evaled[0].type = DataType.NIL
 
 
 class Write(BaseInstruction):
@@ -247,7 +266,7 @@ class Write(BaseInstruction):
 
     def execute(self):
         """Execute instruction"""
-        evaled = self._evaluate_args()
+        evaled = self._evaluate_args([0])
         if evaled[0].type == DataType.BOOL:
             if evaled[0].value:
                 print("true", end="", flush=True)
@@ -264,7 +283,7 @@ class Concat(BaseInstruction):
 
     def execute(self):
         """Execute instruction"""
-        evaled = self._evaluate_args()
+        evaled = self._evaluate_args([1, 2])
         if evaled[1].type != DataType.STRING or evaled[2].type != DataType.STRING:
             exit_program(StatusCode.INVALID_TYPE, "Invalid argument type")
         evaled[0].value = evaled[1].value + evaled[2].value
@@ -276,7 +295,7 @@ class StrLen(BaseInstruction):
 
     def execute(self):
         """Execute instruction"""
-        evaled = self._evaluate_args()
+        evaled = self._evaluate_args([1])
         if evaled[1].type != DataType.STRING:
             exit_program(StatusCode.INVALID_TYPE, "Invalid argument type")
         evaled[0].value = len(evaled[1].value)
@@ -288,7 +307,7 @@ class GetChar(BaseInstruction):
 
     def execute(self):
         """Execute instruction"""
-        evaled = self._evaluate_args()
+        evaled = self._evaluate_args([1, 2])
         if evaled[1].type != DataType.STRING or evaled[2].type != DataType.INT:
             exit_program(StatusCode.INVALID_TYPE, "Invalid argument type")
         if evaled[2].value < 0 or evaled[2].value >= len(evaled[1].value):
@@ -302,7 +321,7 @@ class SetChar(BaseInstruction):
 
     def execute(self):
         """Execute instruction"""
-        evaled = self._evaluate_args()
+        evaled = self._evaluate_args([0, 1, 2])
         if evaled[0].type != DataType.STRING or evaled[1].type != DataType.INT or evaled[2].type != DataType.STRING:
             exit_program(StatusCode.INVALID_TYPE, "Invalid argument type")
         if evaled[1].value < 0 or evaled[1].value >= len(evaled[0].value) or len(evaled[2].value) == 0:
@@ -328,6 +347,7 @@ class Type(BaseInstruction):
             evaled[0].value = "string"
         elif evaled[1].type == None:
             evaled[0].value = ""
+        evaled[0].type = DataType.STRING
 
 
 class Label(BaseInstruction):
@@ -352,8 +372,10 @@ class JumpIfEq(BaseInstruction):
 
     def execute(self):
         """Execute instruction"""
-        evaled = self._evaluate_args()
-        # TODO: Type checking
+        evaled = self._evaluate_args([1, 2])
+        if evaled[1].type != evaled[2].type and evaled[1].type != DataType.NIL and evaled[2].type != DataType.NIL:
+            exit_program(StatusCode.INVALID_TYPE, "Invalid argument type")
+        self.runner.check_label_exists(evaled[0].value)
         if evaled[1].value == evaled[2].value:
             self.runner.jump_to_label(evaled[0].value)
 
@@ -363,8 +385,10 @@ class JumpIfNeq(BaseInstruction):
 
     def execute(self):
         """Execute instruction"""
-        evaled = self._evaluate_args()
-        # TODO: Type checking
+        evaled = self._evaluate_args([1, 2])
+        if evaled[1].type != evaled[2].type and evaled[1].type != DataType.NIL and evaled[2].type != DataType.NIL:
+            exit_program(StatusCode.INVALID_TYPE, "Invalid argument type")
+        self.runner.check_label_exists(evaled[0].value)
         if evaled[1].value != evaled[2].value:
             self.runner.jump_to_label(evaled[0].value)
 
@@ -374,7 +398,7 @@ class Exit(BaseInstruction):
 
     def execute(self):
         """Execute instruction"""
-        evaled = self._evaluate_args()
+        evaled = self._evaluate_args([0])
         if evaled[0].type != DataType.INT:
             exit_program(StatusCode.INVALID_TYPE, "Invalid argument type")
         if evaled[0].value < 0 or evaled[0].value > 49:

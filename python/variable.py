@@ -16,8 +16,8 @@ class Variable:
         self.value = var.value
         self.type = var.type
 
-    def get(self):
-        """Get variable value"""
-        if self.value is None:
-            exit_program(StatusCode.MISSING_VALUE, "Variable has no value")
-        return self
+    def check_initialized(self):
+        """Check if variable is initialized"""
+        if self.value is None and self.type is None:
+            exit_program(StatusCode.MISSING_VALUE,
+                         "Variable is not initialized")

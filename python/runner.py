@@ -26,6 +26,13 @@ class Runner:
             self._execute()
             self.instruction_pointer = self.next_ip
 
+    def check_label_exists(self, label):
+        """Check if label exists"""
+        for instruction in self.instructions:
+            if isinstance(instruction, Label) and instruction.args[0].value == label:
+                return
+        exit_program(StatusCode.SEMANTIC_ERROR, "Label not found")
+
     def jump_to_label(self, label):
         """Jump to label"""
         for index, instruction in enumerate(self.instructions):
