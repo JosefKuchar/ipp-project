@@ -1,5 +1,4 @@
 """Instruction module"""
-from error import StatusCode, exit_program
 import instructions
 
 
@@ -43,9 +42,5 @@ def instruction_factory(xml, runner):
         "BREAK": instructions.Break
     }
 
-    # Check if opcode is valid
-    if xml.attrib['opcode'] not in classes:
-        exit_program(StatusCode.MALLFORMED, "Invalid opcode")
-
     # Return corresponding instruction instance
-    return classes[xml.attrib['opcode']](xml, runner)
+    return classes[xml.attrib['opcode'].upper()](xml, runner)

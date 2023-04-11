@@ -1,6 +1,7 @@
 """Implementation of all instructions"""
 
 import sys
+import copy
 from instruction import BaseInstruction, DataType
 from error import exit_program, StatusCode
 from frame import Frame
@@ -70,7 +71,7 @@ class PushS(BaseInstruction):
     def execute(self):
         """Execute instruction"""
         evaled = self._evaluate_args([0])
-        self.runner.stack.push(evaled[0])
+        self.runner.stack.push(copy.copy(evaled[0]))
 
 
 class PopS(BaseInstruction):

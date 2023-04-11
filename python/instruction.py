@@ -43,16 +43,18 @@ class Argument:
     def __init__(self, xml):
         self.type = DataType.from_string(xml.attrib['type'])
         self.value = xml.text
+        if self.value is not None:
+            self.value = self.value.strip()
         if self.type == DataType.INT:
-            self.value = int(xml.text)
+            self.value = int(self.value)
         elif self.type == DataType.STRING:
-            if xml.text is None:
+            if self.value is None:
                 self.value = ""
             else:
                 self.value = re.sub(r"\\\d{3}",
-                                    lambda x: chr(int(x.group(0)[1:])), xml.text)
+                                    lambda x: chr(int(x.group(0)[1:])), self.value)
         elif self.type == DataType.BOOL:
-            self.value = xml.text == "true"
+            self.value = self.value == "true"
 
 
 class BaseInstruction:
