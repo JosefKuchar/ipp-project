@@ -64,6 +64,7 @@ TYPE_RE = re.compile(r"^(int|string|bool)$")
 
 
 def validate_xml(xml):
+    """Validate XML structure"""
     try:
         """Validate XML structure"""
         root = xml.find('.')

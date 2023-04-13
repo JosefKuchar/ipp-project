@@ -1,9 +1,8 @@
 """Code runner"""
 from frame import FrameManager
-from instruction_factory import instruction_factory
 from error import StatusCode, exit_program
 from stack import Stack
-from instructions import Label
+from instructions import Label, instruction_factory
 from validate import validate_xml
 
 

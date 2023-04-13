@@ -7,6 +7,50 @@ from error import exit_program, StatusCode
 from frame import Frame
 
 
+def instruction_factory(xml, runner):
+    """Instruction factory"""
+    classes = {
+        "MOVE": Move,
+        "CREATEFRAME": CreateFrame,
+        "PUSHFRAME": PushFrame,
+        "POPFRAME": PopFrame,
+        "DEFVAR": DefVar,
+        "CALL": Call,
+        "RETURN": Return,
+        "PUSHS": PushS,
+        "POPS": PopS,
+        "ADD": Add,
+        "SUB": Sub,
+        "MUL": Mul,
+        "IDIV": IDiv,
+        "LT": Lt,
+        "GT": Gt,
+        "EQ": Eq,
+        "AND": And,
+        "OR": Or,
+        "NOT": Not,
+        "INT2CHAR": Int2Char,
+        "STRI2INT": Stri2Int,
+        "READ": Read,
+        "WRITE": Write,
+        "CONCAT": Concat,
+        "STRLEN": StrLen,
+        "GETCHAR": GetChar,
+        "SETCHAR": SetChar,
+        "TYPE": Type,
+        "LABEL": Label,
+        "JUMP": Jump,
+        "JUMPIFEQ": JumpIfEq,
+        "JUMPIFNEQ": JumpIfNeq,
+        "EXIT": Exit,
+        "DPRINT": DPrint,
+        "BREAK": Break
+    }
+
+    # Return corresponding instruction instance
+    return classes[xml.attrib['opcode'].upper()](xml, runner)
+
+
 class Move(BaseInstruction):
     """MOVE <var> <symb>"""
 

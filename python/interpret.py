@@ -6,7 +6,7 @@ from arguments import Arguments
 
 if __name__ == "__main__":
     # Parse arguments
-    args = Arguments.get_instance()
+    args = Arguments()
     args.parse()
 
     # Run the program
