@@ -46,7 +46,18 @@ class Argument:
         if self.value is not None:
             self.value = self.value.strip()
         if self.type == DataType.INT:
-            self.value = int(self.value)
+            self.value = self.value.lower()
+            # Remove underscores, o
+            self.value = re.sub(r"[_o]", "", self.value)
+            # Hex
+            if re.match(r"^[+-]?0x", self.value):
+                self.value = int(self.value, 16)
+            # Octal
+            elif re.match(r"^[+-]?0", self.value):
+                self.value = int(self.value, 8)
+            # Decimal
+            else:
+                self.value = int(self.value, 10)
         elif self.type == DataType.STRING:
             if self.value is None:
                 self.value = ""

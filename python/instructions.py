@@ -456,7 +456,8 @@ class DPrint(BaseInstruction):
 
     def execute(self):
         """Execute instruction"""
-        print("TODO DPRINT INFO", file=sys.stderr)
+        evaled = self._evaluate_args()
+        print("*** DPRINT *** Name: {}, Type: {}, Value: {}".format(evaled[0].name, evaled[0].type, evaled[0].value), file=sys.stderr)
 
 
 class Break(BaseInstruction):
@@ -464,4 +465,4 @@ class Break(BaseInstruction):
 
     def execute(self):
         """Execute instruction"""
-        print("TODO BREAK INFO", file=sys.stderr)
+        print("*** BREAK *** IP: {}".format(self.runner.instruction_pointer), file=sys.stderr)
