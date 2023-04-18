@@ -1,4 +1,8 @@
-"""Entry point"""
+"""
+IPPcode23 interpreter
+
+@Author: Josef Kuchař <xkucha28@stud.fit.vutbr.cz>
+"""
 
 import sys
 from runner import Runner
